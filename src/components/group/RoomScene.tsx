@@ -20,7 +20,7 @@ function buildHotspots(slug: string): Hotspot[] {
     { id: "letters", emoji: "💌", label: "우리에게 온 편지", teaser: "받은 편지를 확인하거나 편지를 써보세요.", href: `/g/${slug}/letters` },
     { id: "memories", emoji: "📖", label: "우리만의 이야기", teaser: "책장 속 우리 이야기를 확인해보세요.", href: `/g/${slug}/memories` },
     { id: "places", emoji: "🌏", label: "우리가 함께한 곳", teaser: "함께 갔던 곳들을 확인해보세요.", href: `/g/${slug}/places` },
-    { id: "report", emoji: "✨", label: "모임 리포트", teaser: "우리 모임 리포트, 곧 화면에 켜져요." },
+    { id: "report", emoji: "✨", label: "모임 리포트", teaser: "우리 모임 리포트를 확인해보세요.", href: `/g/${slug}/report` },
   ];
 }
 

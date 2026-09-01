@@ -9,6 +9,7 @@ import {
   type TraitId,
 } from "@/lib/personality";
 import EmptyState from "@/components/group/EmptyState";
+import ShareButton from "@/components/group/ShareButton";
 
 type Pair = {
   a: { id: string; name: string };
@@ -142,6 +143,13 @@ export default async function CompatibilityPage({
                 </div>
               ))}
           </section>
+
+          <ShareButton
+            path={`/g/${slug}/compatibility`}
+            shareTitle={`${group.name}의 궁합 결과 ✨`}
+            shareText={`${group.name}에서 우리 궁합을 확인해보세요 ❤️`}
+            copyLabel="궁합 링크 복사"
+          />
         </div>
       )}
     </main>

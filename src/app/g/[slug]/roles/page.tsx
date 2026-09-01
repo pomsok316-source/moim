@@ -5,6 +5,7 @@ import { getMemberSession } from "@/lib/session";
 import type { GroupDoc, MemberDoc } from "@/lib/group";
 import { TRAITS, TRAIT_IDS, type TraitId } from "@/lib/personality";
 import EmptyState from "@/components/group/EmptyState";
+import ShareButton from "@/components/group/ShareButton";
 
 export default async function RolesPage({
   params,
@@ -99,6 +100,13 @@ export default async function RolesPage({
               ))}
             </div>
           </section>
+
+          <ShareButton
+            path={`/g/${slug}/roles`}
+            shareTitle={`${group.name}의 역할 ✨`}
+            shareText={`${group.name}에서 우리들의 역할을 확인해보세요 🎉`}
+            copyLabel="역할 링크 복사"
+          />
         </div>
       )}
     </main>

@@ -13,6 +13,7 @@ import {
 import PersonalityQuiz from "@/components/personality/PersonalityQuiz";
 import TraitCard from "@/components/personality/TraitCard";
 import EmptyState from "@/components/group/EmptyState";
+import ShareButton from "@/components/group/ShareButton";
 
 export default async function PersonalityPage({
   params,
@@ -62,6 +63,13 @@ export default async function PersonalityPage({
             emoji={TRAITS[me.personalityTypeId as TraitId].emoji}
             title={TRAITS[me.personalityTypeId as TraitId].personalTitle}
             desc={TRAITS[me.personalityTypeId as TraitId].personalDesc}
+          />
+
+          <ShareButton
+            path={`/g/${slug}/personality`}
+            shareTitle={`나는 ${TRAITS[me.personalityTypeId as TraitId].personalTitle}!`}
+            shareText={`${group.name}에서 내 성향은 ${TRAITS[me.personalityTypeId as TraitId].emoji} ${TRAITS[me.personalityTypeId as TraitId].personalTitle}이래요.`}
+            copyLabel="결과 링크 복사"
           />
 
           <section>
