@@ -115,7 +115,7 @@ export default async function GroupPage({
         <p className="mb-3 text-xs text-[var(--ink-soft)]">
           벽이랑 가구를 눌러보세요.
         </p>
-        <RoomScene />
+        <RoomScene slug={slug} />
       </section>
     </main>
   );

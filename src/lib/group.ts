@@ -77,6 +77,11 @@ export type MemberDoc = {
   joinedAt: FirebaseFirestore.Timestamp | null;
   pinFailCount: number;
   pinLockedUntil: FirebaseFirestore.Timestamp | null;
+  // 성향 테스트 결과 (안 했으면 전부 없음)
+  personalityAnswers?: string[];
+  personalityScores?: Record<string, number>;
+  personalityTypeId?: string;
+  personalityCompletedAt?: FirebaseFirestore.Timestamp | null;
 };
 
 export type MemberSummary = {

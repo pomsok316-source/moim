@@ -1,26 +1,32 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Hotspot = {
   id: string;
   emoji: string;
   label: string;
   teaser: string;
+  href?: string;
 };
 
-const HOTSPOTS: Hotspot[] = [
-  { id: "personality", emoji: "🎭", label: "우리들의 성향", teaser: "거울 속 우리 모임의 성향, 곧 볼 수 있어요." },
-  { id: "compatibility", emoji: "❤️", label: "우리 궁합", teaser: "누구랑 잘 맞을지, 곧 확인할 수 있어요." },
-  { id: "roles", emoji: "🎉", label: "우리들의 역할", teaser: "각자 맡은 역할, 곧 공개돼요." },
-  { id: "questions", emoji: "👀", label: "서로의 생각", teaser: "친구들 생각이 쪽지로 쌓이는 중이에요." },
-  { id: "letters", emoji: "💌", label: "우리에게 온 편지", teaser: "편지함은 아직 비어있어요. 곧 열려요." },
-  { id: "memories", emoji: "📖", label: "우리만의 이야기", teaser: "책장에 우리 이야기가 채워질 예정이에요." },
-  { id: "places", emoji: "🌏", label: "우리가 함께한 곳", teaser: "함께 갔던 곳들, 곧 지구본에 표시돼요." },
-  { id: "report", emoji: "✨", label: "모임 리포트", teaser: "우리 모임 리포트, 곧 화면에 켜져요." },
-];
+function buildHotspots(slug: string): Hotspot[] {
+  return [
+    { id: "personality", emoji: "🎭", label: "우리들의 성향", teaser: "거울 속 우리 모임의 성향을 확인해보세요.", href: `/g/${slug}/personality` },
+    { id: "compatibility", emoji: "❤️", label: "우리 궁합", teaser: "누구랑 잘 맞는지 확인해보세요.", href: `/g/${slug}/compatibility` },
+    { id: "roles", emoji: "🎉", label: "우리들의 역할", teaser: "각자 맡은 역할을 확인해보세요.", href: `/g/${slug}/roles` },
+    { id: "questions", emoji: "👀", label: "서로의 생각", teaser: "친구들 생각이 쪽지로 쌓이는 중이에요." },
+    { id: "letters", emoji: "💌", label: "우리에게 온 편지", teaser: "편지함은 아직 비어있어요. 곧 열려요." },
+    { id: "memories", emoji: "📖", label: "우리만의 이야기", teaser: "책장에 우리 이야기가 채워질 예정이에요." },
+    { id: "places", emoji: "🌏", label: "우리가 함께한 곳", teaser: "함께 갔던 곳들, 곧 지구본에 표시돼요." },
+    { id: "report", emoji: "✨", label: "모임 리포트", teaser: "우리 모임 리포트, 곧 화면에 켜져요." },
+  ];
+}
 
-export default function RoomScene() {
+export default function RoomScene({ slug }: { slug: string }) {
+  const router = useRouter();
+  const HOTSPOTS = buildHotspots(slug);
   const [active, setActive] = useState<Hotspot | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -31,6 +37,10 @@ export default function RoomScene() {
   }, []);
 
   const handlePick = (h: Hotspot) => {
+    if (h.href) {
+      router.push(h.href);
+      return;
+    }
     setActive(h);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setActive(null), 2600);
