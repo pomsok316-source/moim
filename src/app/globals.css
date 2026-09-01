@@ -21,6 +21,10 @@
   --dusk-top: #d9c2e0;
   --dusk-bottom: #ffc9a8;
 
+  /* 랜딩 건물 일러스트 전용(방 씬과 분리) */
+  --bldg-wall: #ffe3c2;
+  --bldg-roof: #c76b8a;
+
   /* 302호 방 안(RoomScene) 팔레트 */
   --wall: #f3e3d3;
   --wall-trim: #fff8f0;

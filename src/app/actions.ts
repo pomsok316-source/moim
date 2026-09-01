@@ -1,7 +1,7 @@
 "use server";
 
 import { customAlphabet } from "nanoid";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { CollectionReference, DocumentReference } from "firebase-admin/firestore";
 import { getDb } from "@/lib/firebaseAdmin";
@@ -131,36 +131,45 @@ export async function createGroupAction(
       )
     : MEMBER_TARGET_MIN;
 
-  const db = getDb();
-  const groups = db.collection("groups");
+  try {
+    const db = getDb();
+    const groups = db.collection("groups");
 
-  let slug = generateSlug();
-  if ((await groups.doc(slug).get()).exists) {
-    slug = generateSlug();
+    let slug = generateSlug();
+    if ((await groups.doc(slug).get()).exists) {
+      slug = generateSlug();
+    }
+
+    const groupDoc: GroupDoc = {
+      name,
+      typeId,
+      description,
+      icon,
+      memberTarget,
+      createdAt: null,
+    };
+
+    const groupRef = groups.doc(slug);
+    await groupRef.set({
+      ...groupDoc,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    await createMemberAndSignIn(slug, groupRef, {
+      name: creatorName,
+      pin,
+      isOwner: true,
+    });
+
+    redirect(`/g/${slug}?welcome=1`);
+  } catch (err) {
+    unstable_rethrow(err);
+    console.error("createGroupAction failed:", err);
+    return {
+      status: "error",
+      error: "모임을 만드는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.",
+    };
   }
-
-  const groupDoc: GroupDoc = {
-    name,
-    typeId,
-    description,
-    icon,
-    memberTarget,
-    createdAt: null,
-  };
-
-  const groupRef = groups.doc(slug);
-  await groupRef.set({
-    ...groupDoc,
-    createdAt: FieldValue.serverTimestamp(),
-  });
-
-  await createMemberAndSignIn(slug, groupRef, {
-    name: creatorName,
-    pin,
-    isOwner: true,
-  });
-
-  redirect(`/g/${slug}?welcome=1`);
 }
 
 export type JoinGroupState =
@@ -193,24 +202,33 @@ export async function joinNewMemberAction(
     return { status: "error", error: pinError };
   }
 
-  const db = getDb();
-  const groupRef = db.collection("groups").doc(slug);
-  const groupSnap = await groupRef.get();
-  if (!groupSnap.exists) {
-    return { status: "error", error: "존재하지 않는 모임이에요." };
-  }
+  try {
+    const db = getDb();
+    const groupRef = db.collection("groups").doc(slug);
+    const groupSnap = await groupRef.get();
+    if (!groupSnap.exists) {
+      return { status: "error", error: "존재하지 않는 모임이에요." };
+    }
 
-  const membersRef = groupRef.collection("members");
-  if (await isNameTaken(membersRef, name.toLowerCase())) {
+    const membersRef = groupRef.collection("members");
+    if (await isNameTaken(membersRef, name.toLowerCase())) {
+      return {
+        status: "error",
+        error: "이미 모임에 있는 이름이에요. 혹시 그 사람이라면 '기존 이름으로 들어가기'를 눌러주세요.",
+      };
+    }
+
+    await createMemberAndSignIn(slug, groupRef, { name, pin, isOwner: false });
+
+    redirect(`/g/${slug}`);
+  } catch (err) {
+    unstable_rethrow(err);
+    console.error("joinNewMemberAction failed:", err);
     return {
       status: "error",
-      error: "이미 모임에 있는 이름이에요. 혹시 그 사람이라면 '기존 이름으로 들어가기'를 눌러주세요.",
+      error: "참여하는 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.",
     };
   }
-
-  await createMemberAndSignIn(slug, groupRef, { name, pin, isOwner: false });
-
-  redirect(`/g/${slug}`);
 }
 
 export type LoginState =
@@ -232,56 +250,65 @@ export async function loginWithPinAction(
     return { status: "error", error: "PIN은 숫자 4자리로 입력해주세요." };
   }
 
-  const db = getDb();
-  const memberRef = db
-    .collection("groups")
-    .doc(slug)
-    .collection("members")
-    .doc(memberId);
-  const snap = await memberRef.get();
-  if (!snap.exists) {
-    return { status: "error", error: "존재하지 않는 멤버예요." };
-  }
-  const data = snap.data() as MemberDoc;
+  try {
+    const db = getDb();
+    const memberRef = db
+      .collection("groups")
+      .doc(slug)
+      .collection("members")
+      .doc(memberId);
+    const snap = await memberRef.get();
+    if (!snap.exists) {
+      return { status: "error", error: "존재하지 않는 멤버예요." };
+    }
+    const data = snap.data() as MemberDoc;
 
-  if (data.pinLockedUntil && data.pinLockedUntil.toMillis() > Date.now()) {
-    return {
-      status: "error",
-      error: "PIN을 너무 많이 틀렸어요. 5분 후 다시 시도해주세요.",
-    };
-  }
-
-  const ok = verifyPin(pin, data.pinHash, data.pinSalt);
-  if (!ok) {
-    const failCount = (data.pinFailCount ?? 0) + 1;
-    if (failCount >= MAX_PIN_ATTEMPTS) {
-      await memberRef.update({
-        pinFailCount: 0,
-        pinLockedUntil: Timestamp.fromMillis(Date.now() + PIN_LOCK_MS),
-      });
+    if (data.pinLockedUntil && data.pinLockedUntil.toMillis() > Date.now()) {
       return {
         status: "error",
         error: "PIN을 너무 많이 틀렸어요. 5분 후 다시 시도해주세요.",
       };
     }
-    await memberRef.update({ pinFailCount: failCount });
+
+    const ok = verifyPin(pin, data.pinHash, data.pinSalt);
+    if (!ok) {
+      const failCount = (data.pinFailCount ?? 0) + 1;
+      if (failCount >= MAX_PIN_ATTEMPTS) {
+        await memberRef.update({
+          pinFailCount: 0,
+          pinLockedUntil: Timestamp.fromMillis(Date.now() + PIN_LOCK_MS),
+        });
+        return {
+          status: "error",
+          error: "PIN을 너무 많이 틀렸어요. 5분 후 다시 시도해주세요.",
+        };
+      }
+      await memberRef.update({ pinFailCount: failCount });
+      return {
+        status: "error",
+        error: `PIN이 틀렸어요. (${MAX_PIN_ATTEMPTS - failCount}번 더 시도할 수 있어요)`,
+      };
+    }
+
+    const token = generateToken();
+    const nextTokens = [...(data.sessionTokens ?? []), token].slice(
+      -MAX_SESSION_TOKENS
+    );
+    await memberRef.update({
+      sessionTokens: nextTokens,
+      pinFailCount: 0,
+      pinLockedUntil: null,
+    });
+
+    await setMemberSessionCookie(slug, memberId, token);
+
+    redirect(`/g/${slug}`);
+  } catch (err) {
+    unstable_rethrow(err);
+    console.error("loginWithPinAction failed:", err);
     return {
       status: "error",
-      error: `PIN이 틀렸어요. (${MAX_PIN_ATTEMPTS - failCount}번 더 시도할 수 있어요)`,
+      error: "로그인 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.",
     };
   }
-
-  const token = generateToken();
-  const nextTokens = [...(data.sessionTokens ?? []), token].slice(
-    -MAX_SESSION_TOKENS
-  );
-  await memberRef.update({
-    sessionTokens: nextTokens,
-    pinFailCount: 0,
-    pinLockedUntil: null,
-  });
-
-  await setMemberSessionCookie(slug, memberId, token);
-
-  redirect(`/g/${slug}`);
 }

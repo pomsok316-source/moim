@@ -10,12 +10,6 @@ export default function Home() {
         놀러올래?
       </h1>
       <p className="mt-4 text-[var(--ink-soft)] leading-relaxed">
-        문을 열면, 친구들과 함께 채워나갈
-        <br />
-        우리만의 작은 방이 시작돼요.
-        <br />
-        성향 테스트부터 편지, 추억까지 —
-        <br />
         같이 놀러 온 사람들과 하나씩 완성해가요.
       </p>
 
