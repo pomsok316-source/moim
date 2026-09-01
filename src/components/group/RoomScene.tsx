@@ -16,7 +16,7 @@ function buildHotspots(slug: string): Hotspot[] {
     { id: "personality", emoji: "🎭", label: "우리들의 성향", teaser: "거울 속 우리 모임의 성향을 확인해보세요.", href: `/g/${slug}/personality` },
     { id: "compatibility", emoji: "❤️", label: "우리 궁합", teaser: "누구랑 잘 맞는지 확인해보세요.", href: `/g/${slug}/compatibility` },
     { id: "roles", emoji: "🎉", label: "우리들의 역할", teaser: "각자 맡은 역할을 확인해보세요.", href: `/g/${slug}/roles` },
-    { id: "questions", emoji: "👀", label: "서로의 생각", teaser: "친구들 생각이 쪽지로 쌓이는 중이에요." },
+    { id: "questions", emoji: "👀", label: "서로의 생각", teaser: "친구들이 생각하는 서로를 확인해보세요.", href: `/g/${slug}/questions` },
     { id: "letters", emoji: "💌", label: "우리에게 온 편지", teaser: "편지함은 아직 비어있어요. 곧 열려요." },
     { id: "memories", emoji: "📖", label: "우리만의 이야기", teaser: "책장에 우리 이야기가 채워질 예정이에요." },
     { id: "places", emoji: "🌏", label: "우리가 함께한 곳", teaser: "함께 갔던 곳들, 곧 지구본에 표시돼요." },
