@@ -5,7 +5,7 @@ import { getGroupType, type GroupDoc, type MemberSummary } from "@/lib/group";
 import GroupAccessPanel from "@/components/group/GroupAccessPanel";
 import InviteSharePanel from "@/components/group/InviteSharePanel";
 import MemberList from "@/components/group/MemberList";
-import FeatureCardGrid from "@/components/group/FeatureCardGrid";
+import RoomScene from "@/components/group/RoomScene";
 import EmptyState from "@/components/group/EmptyState";
 
 export default async function GroupPage({
@@ -109,8 +109,13 @@ export default async function GroupPage({
       </section>
 
       <section className="mt-8">
-        <p className="mb-2 font-bold text-[var(--ink)]">모임 메뉴</p>
-        <FeatureCardGrid />
+        <p className="mb-2 font-bold text-[var(--ink)]">
+          {group.name} 방에 놀러왔어요 🚪
+        </p>
+        <p className="mb-3 text-xs text-[var(--ink-soft)]">
+          벽이랑 가구를 눌러보세요.
+        </p>
+        <RoomScene />
       </section>
     </main>
   );

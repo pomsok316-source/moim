@@ -20,6 +20,14 @@
   --door-dark: #b8492f;
   --dusk-top: #d9c2e0;
   --dusk-bottom: #ffc9a8;
+
+  /* 302호 방 안(RoomScene) 팔레트 */
+  --wall: #f3e3d3;
+  --wall-trim: #fff8f0;
+  --floor: #d9a06b;
+  --floor-dark: #b97f4d;
+  --frame: #fbb96a;
+  --glass: #eaf4fb;
 }
 
 @theme inline {
@@ -142,4 +150,19 @@ body {
 
 .sky-card:active {
   transform: scale(0.98);
+}
+
+.hotspot {
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.15s ease;
+}
+
+.hotspot:hover {
+  transform: scale(1.06);
+}
+
+.hotspot:active {
+  transform: scale(0.94);
 }
