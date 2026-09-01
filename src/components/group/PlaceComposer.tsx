@@ -2,23 +2,23 @@
 
 import { useActionState, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { addMemoryAction, type AddMemoryState } from "@/app/actions/memories";
-import { MEMORY_TEXT_MAX_LENGTH } from "@/lib/memories";
+import { addPlaceAction, type AddPlaceState } from "@/app/actions/places";
+import { PLACE_DESCRIPTION_MAX_LENGTH, PLACE_NAME_MAX_LENGTH } from "@/lib/places";
 import { resizeImageToDataUrl } from "@/lib/photo";
 
-const initialState: AddMemoryState = { status: "idle" };
+const initialState: AddPlaceState = { status: "idle" };
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <button type="submit" disabled={pending} className="btn-primary w-full py-3.5">
-      {pending ? "남기는 중..." : "이야기 남기기 ✨"}
+      {pending ? "남기는 중..." : "장소 남기기 📍"}
     </button>
   );
 }
 
-export default function MemoryComposer({ slug }: { slug: string }) {
-  const [state, formAction] = useActionState(addMemoryAction, initialState);
+export default function PlaceComposer({ slug }: { slug: string }) {
+  const [state, formAction] = useActionState(addPlaceAction, initialState);
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -28,8 +28,7 @@ export default function MemoryComposer({ slug }: { slug: string }) {
     if (!file) return;
     setProcessing(true);
     try {
-      const dataUrl = await resizeImageToDataUrl(file);
-      setPhotoDataUrl(dataUrl);
+      setPhotoDataUrl(await resizeImageToDataUrl(file));
     } catch {
       setPhotoDataUrl(null);
     } finally {
@@ -42,18 +41,40 @@ export default function MemoryComposer({ slug }: { slug: string }) {
       <input type="hidden" name="slug" value={slug} />
       <input type="hidden" name="photo" value={photoDataUrl ?? ""} />
 
-      <p className="text-sm font-bold text-[var(--ink)]">
-        우리 모임에서 가장 기억에 남는 순간은?
-      </p>
+      <div>
+        <label className="text-sm font-bold text-[var(--ink)]">장소 이름</label>
+        <input
+          name="placeName"
+          required
+          maxLength={PLACE_NAME_MAX_LENGTH}
+          placeholder="예: 제주도"
+          className="mt-1.5 w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--coral)]"
+        />
+      </div>
 
-      <textarea
-        name="text"
-        required
-        maxLength={MEMORY_TEXT_MAX_LENGTH}
-        rows={4}
-        placeholder="예: 제주도에서 새벽 3시에 편의점 갔던 날"
-        className="w-full resize-none rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none focus:border-[var(--coral)]"
-      />
+      <div>
+        <label className="text-sm font-bold text-[var(--ink)]">
+          날짜 <span className="font-normal text-[var(--ink-soft)]">(선택)</span>
+        </label>
+        <input
+          type="date"
+          name="visitedDate"
+          className="mt-1.5 w-full rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--coral)]"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm font-bold text-[var(--ink)]">
+          설명 <span className="font-normal text-[var(--ink-soft)]">(선택)</span>
+        </label>
+        <textarea
+          name="description"
+          maxLength={PLACE_DESCRIPTION_MAX_LENGTH}
+          rows={3}
+          placeholder="예: 새벽에 바다 보러 갔던 날"
+          className="mt-1.5 w-full resize-none rounded-xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-[var(--coral)]"
+        />
+      </div>
 
       {photoDataUrl ? (
         <div className="relative w-32">
@@ -75,13 +96,7 @@ export default function MemoryComposer({ slug }: { slug: string }) {
         <label className="card flex w-32 flex-col items-center justify-center gap-1 border border-dashed border-black/15 py-6 text-xs text-[var(--ink-soft)]">
           <span className="text-xl">📷</span>
           {processing ? "처리 중..." : "사진 추가"}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFile}
-          />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
         </label>
       )}
 

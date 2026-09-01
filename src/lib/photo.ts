@@ -1,7 +1,11 @@
-import { MEMORY_IMAGE_MAX_DIMENSION } from "./memories";
+// 추억/장소 등 여러 기능에서 공용으로 쓰는 사진 첨부 관련 상수 + 브라우저 리사이즈 유틸.
+// Firebase Storage 없이 Firestore 문서에 base64로 바로 저장할 수 있도록 용량을 줄인다.
 
-// 브라우저에서 사진을 긴 변 기준으로 리사이즈해 JPEG data URL로 반환한다.
-// Firebase Storage 없이 Firestore 문서에 바로 저장할 수 있을 만큼 용량을 줄이기 위함.
+export const PHOTO_MIME_PREFIX = "data:image/jpeg;base64,";
+export const PHOTO_MAX_BASE64_LENGTH = 700_000;
+// 클라이언트에서 사진을 리사이즈할 때 쓰는 최대 긴 변 길이(px)
+export const PHOTO_MAX_DIMENSION = 1000;
+
 export function resizeImageToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -9,7 +13,7 @@ export function resizeImageToDataUrl(file: File): Promise<string> {
 
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
-      const scale = Math.min(1, MEMORY_IMAGE_MAX_DIMENSION / Math.max(img.width, img.height));
+      const scale = Math.min(1, PHOTO_MAX_DIMENSION / Math.max(img.width, img.height));
       const width = Math.round(img.width * scale);
       const height = Math.round(img.height * scale);
 
