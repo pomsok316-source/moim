@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --cream: #fff8f0;
+  --cream-deep: #ffefdd;
+  --coral: #ff8a65;
+  --coral-dark: #e2603f;
+  --butter: #ffd166;
+  --mint: #7bc4a4;
+  --ink: #4a3728;
+  --ink-soft: #8a7666;
+  --card: #ffffff;
+}
+
+@theme inline {
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+}
+
+html {
+  overscroll-behavior-y: none;
+}
+
+body {
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
+  background: radial-gradient(
+      ellipse at top,
+      var(--cream-deep) 0%,
+      var(--cream) 60%
+    )
+    fixed;
+  color: var(--ink);
+  font-family: var(--font-body), "Noto Sans KR", sans-serif;
+}
+
+.font-heading {
+  font-family: var(--font-heading), "Jua", sans-serif;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 30px -12px rgba(74, 55, 40, 0.15);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--coral) 0%, var(--coral-dark) 100%);
+  color: #fff8f0;
+  border-radius: 999px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px -6px rgba(226, 96, 63, 0.55);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-bob {
+  animation: bob 3s ease-in-out infinite;
+}
