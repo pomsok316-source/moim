@@ -1,21 +1,24 @@
-# 모임 (가칭)
+# 302호
 
 친구, 커플, 가족, 동창, 동아리, 회사 동료, 여행 멤버 등 여러 명이 하나의 링크로 모여
-우리만의 성향, 관계, 추억, 편지를 함께 만들어보는 서비스입니다.
+우리만의 성향, 관계, 추억, 편지를 함께 만들어보는 서비스입니다. (내부 코드네임: `moim`)
 
 > **christmas-letters와 완전히 독립적인 별개 프로젝트입니다.** 기술 스택(Next.js + Firebase +
 > Vercel)과 "서버 전용 Firestore 접근" 보안 패턴만 참고했을 뿐, 코드/데이터/디자인은 공유하지 않습니다.
 
 ## 구조
 
-- **`/`** — 서비스 소개, "우리 모임 만들기" 진입.
-- **`/new`** — 모임 생성 폼 (이름 / 유형 / 아이콘 / 예상 인원 / 소개 / 내 닉네임).
+- **`/`** — 서비스 소개("문 열고 들어가기" 컨셉), "/new"로 진입.
+- **`/new`** — 모임 생성 폼 (이름 / 유형 / 아이콘 / 예상 인원 / 소개 / 내 닉네임 / PIN).
 - **`/g/[slug]`** — 모임 페이지.
-  - 이 브라우저가 아직 참여하지 않았다면 → 닉네임만 입력하는 참여 폼.
-  - 이미 참여했다면 → 모임 홈(멤버 목록, 초대 링크, 모임 메뉴).
-- 계정/로그인 시스템 없음. 모임 생성 시 초대 링크(`slug`)가 생기고, 각 멤버가 참여하면
-  서버가 발급한 비밀 `token`을 **httpOnly 쿠키**(`moim_m_{slug}`)에 저장해 "이 브라우저 = 이
-  모임의 이 멤버"임을 기억합니다. 쿠키는 해당 모임 경로(`/g/{slug}`)에만 스코프됩니다.
+  - 이 브라우저에 유효한 세션 쿠키가 없다면 → 이름 선택 + PIN 로그인, 또는 새 멤버로 참여하는 화면.
+  - 이미 로그인돼 있다면 → 모임 홈(멤버 목록, 초대 링크, 모임 메뉴).
+- 계정/로그인 시스템 없음. 모임 생성/참여 시 이름 + PIN(4자리)을 설정하고, 서버가 발급한
+  세션 토큰을 **httpOnly 쿠키**(`moim_m_{slug}`)에 저장해 같은 브라우저에서는 자동으로
+  통과합니다. 다른 기기·브라우저(카카오톡 인앱 브라우저 등)로 같은 링크에 들어오면 쿠키가
+  없으므로 이름을 고르고 PIN을 입력해 로그인합니다 — 카카오톡으로 링크가 여러 기기에
+  돌아다녀도 "이 사람"임을 계속 증명할 수 있는 구조입니다. PIN은 scrypt로 해시해 저장하고,
+  5회 오답 시 5분 잠급니다.
 - 데이터는 Firebase Firestore에 저장됩니다. Firestore 보안 규칙에서 클라이언트 직접 접근은
   전부 막고, 모든 읽기/쓰기는 서버(Next.js Server Actions)를 통해서만 이루어집니다.
 
@@ -26,14 +29,16 @@ groups/{slug}
   name, typeId, description, icon, memberTarget, createdAt
 
 groups/{slug}/members/{memberId}
-  name, token, isOwner, joinedAt
+  name, nameLower, pinHash, pinSalt, sessionTokens[], isOwner, joinedAt,
+  pinFailCount, pinLockedUntil
 ```
 
-`slug`는 초대 링크에 노출되는 추측 불가능한 공개 식별자(10자리), `token`은 멤버별 32자리
-비밀 값으로 쿠키에만 저장됩니다. 향후 기능은 같은 `groups/{slug}` 하위에 서브컬렉션으로
-확장합니다: `personalityResults`, `questions`, `votes`, `letters`, `memories`, `places`,
-`report` 등. 한 사용자가 여러 모임에 속할 수 있고(모임마다 별도 쿠키), 한 모임에 여러 멤버가
-존재하는 구조를 그대로 따릅니다.
+`slug`는 초대 링크에 노출되는 추측 불가능한 공개 식별자(10자리). `pinHash`/`pinSalt`는
+멤버의 PIN을 scrypt로 해시한 값(평문 저장 안 함), `sessionTokens`는 로그인할 때마다
+추가되는 32자리 비밀 토큰 배열로 여러 기기에서 동시에 "기억된 로그인" 상태를 유지합니다.
+향후 기능은 같은 `groups/{slug}` 하위에 서브컬렉션으로 확장합니다: `personalityResults`,
+`questions`, `votes`, `letters`, `memories`, `places`, `report` 등. 한 사용자가 여러 모임에
+속할 수 있고(모임마다 별도 쿠키), 한 모임에 여러 멤버가 존재하는 구조를 그대로 따릅니다.
 
 ## 처음 세팅하기
 
@@ -53,10 +58,14 @@ npm install
    옮겨 적습니다:
 
 ```
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+project_id=your-project-id
+client_email=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+private_key="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
+
+(Firebase 서비스 계정 JSON의 필드 이름을 그대로 씁니다. Vercel 환경변수 입력창에 값을
+붙여넣을 때 감싸는 큰따옴표까지 같이 넣지 않도록 주의하세요 — 코드에서 벗겨내긴 하지만
+헷갈리기 쉽습니다.)
 
 ### 3. Firestore 보안 규칙 적용
 
@@ -75,8 +84,8 @@ http://localhost:3000 에서 확인합니다.
 
 1. GitHub 저장소를 만들고 이 프로젝트를 push합니다.
 2. [Vercel](https://vercel.com)에서 저장소를 import합니다.
-3. 프로젝트 설정의 Environment Variables에 `.env.local`의 세 값(`FIREBASE_PROJECT_ID`,
-   `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`)을 그대로 등록합니다.
+3. 프로젝트 설정의 Environment Variables에 `.env.local`의 세 값(`project_id`,
+   `client_email`, `private_key`)을 그대로 등록합니다.
 4. 배포 후 도메인이 생기면 `NEXT_PUBLIC_SITE_URL`에도 등록해두세요.
 
 ## 기술 스택

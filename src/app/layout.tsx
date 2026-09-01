@@ -17,9 +17,9 @@ const body = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "모임",
+  title: "302호",
   description:
-    "친구, 커플, 가족, 동아리 — 우리끼리만 하는 성향 테스트와 궁합, 편지, 추억 기록.",
+    "똑똑, 문 열어도 돼? 친구, 커플, 가족과 함께 채워가는 우리만의 작은 방.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

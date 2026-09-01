@@ -10,6 +10,16 @@
   --ink: #4a3728;
   --ink-soft: #8a7666;
   --card: #ffffff;
+
+  /* 302호 문/건물 일러스트 팔레트 */
+  --brick: #f0b58c;
+  --roof: #a56a4e;
+  --window-dark: #5b4a63;
+  --window-lit: #ffd166;
+  --door: #e2603f;
+  --door-dark: #b8492f;
+  --dusk-top: #d9c2e0;
+  --dusk-bottom: #ffc9a8;
 }
 
 @theme inline {
@@ -104,4 +114,32 @@ body {
 
 .animate-bob {
   animation: bob 3s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.animate-twinkle {
+  animation: twinkle 2.2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.sky-card {
+  background: linear-gradient(180deg, var(--dusk-top) 0%, var(--dusk-bottom) 100%);
+  border-radius: 1.75rem;
+  box-shadow: 0 14px 34px -14px rgba(74, 55, 40, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sky-card:active {
+  transform: scale(0.98);
 }

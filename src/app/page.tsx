@@ -1,56 +1,38 @@
 import Link from "next/link";
-
-const PREVIEW_CARDS = [
-  { emoji: "🎭", label: "우리들의 성향" },
-  { emoji: "❤️", label: "우리 궁합" },
-  { emoji: "👀", label: "서로의 생각" },
-  { emoji: "💌", label: "우리에게 온 편지" },
-];
+import DoorBuilding from "@/components/home/DoorBuilding";
 
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center px-6 py-14 text-center">
-      <p className="animate-bob text-5xl">🧸</p>
-      <h1 className="font-heading mt-4 text-5xl text-[var(--coral-dark)]">
-        모임
+      <h1 className="font-heading text-4xl leading-snug text-[var(--coral-dark)]">
+        우리 302호에
+        <br />
+        놀러올래?
       </h1>
       <p className="mt-4 text-[var(--ink-soft)] leading-relaxed">
-        친구, 커플, 가족, 동아리, 회사 동료까지 —
+        문을 열면, 친구들과 함께 채워나갈
         <br />
-        링크 하나로 모여서
+        우리만의 작은 방이 시작돼요.
         <br />
-        <span className="font-bold text-[var(--ink)]">
-          우리만의 성향, 궁합, 편지, 추억
-        </span>
-        을
+        성향 테스트부터 편지, 추억까지 —
         <br />
-        함께 만들어보세요.
+        같이 놀러 온 사람들과 하나씩 완성해가요.
       </p>
-
-      <div className="mt-8 grid w-full grid-cols-2 gap-3">
-        {PREVIEW_CARDS.map((c, i) => (
-          <div
-            key={c.label}
-            className="card animate-fade-in-up flex flex-col items-center gap-1 px-3 py-5"
-            style={{ animationDelay: `${i * 80}ms` }}
-          >
-            <span className="text-2xl">{c.emoji}</span>
-            <span className="text-sm font-bold text-[var(--ink)]">
-              {c.label}
-            </span>
-          </div>
-        ))}
-      </div>
 
       <Link
         href="/new"
-        className="btn-primary mt-10 flex w-full items-center justify-center py-4 text-lg"
+        className="sky-card group relative mt-9 flex w-full flex-col items-center overflow-hidden px-6 pb-9 pt-8"
       >
-        우리 모임 만들기 🎉
+        <div className="w-40 transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
+          <DoorBuilding />
+        </div>
+        <span className="btn-primary absolute bottom-3 px-5 py-2.5 text-sm">
+          똑똑, 문 열고 들어가기 🚪
+        </span>
       </Link>
 
-      <p className="mt-6 text-xs text-[var(--ink-soft)]">
-        회원가입 없이, 링크 하나로 바로 시작해요.
+      <p className="mt-8 text-xs text-[var(--ink-soft)]">
+        회원가입 없이, 이름이랑 PIN만으로 바로 시작해요.
       </p>
     </main>
   );
